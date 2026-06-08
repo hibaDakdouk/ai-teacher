@@ -160,10 +160,5 @@ A teacher that gives direct answers produces passive learners. Guiding students 
 
 ---
 
-## About
-
-Built as part of a deliberate transition from academic AI research (PhD in multi-armed bandits, postdoctoral work in reinforcement learning for 5G/mmWave networks) into applied AI engineering.
-
-The mathematical foundations from research — optimization theory, vector spaces, probability, and reward modeling — directly informed the architecture decisions in this project, particularly the RAG retrieval pipeline and embedding similarity search.
 
 
