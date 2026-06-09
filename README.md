@@ -165,10 +165,7 @@ Zero-setup local vector database, perfect for development. The entire RAG logic 
 A teacher that gives direct answers produces passive learners. Guiding students to discover answers themselves produces deeper understanding and retention — the core pedagogical principle behind this project.
 
 **How off-topic questions are handled?**
-A strict system prompt defines the allowed domain — AI, Machine Learning, 
-Data Science, and directly related mathematics and programming concepts. 
-Claude is instructed to reject questions outside this domain regardless 
-of whether the answer exists in uploaded documents.
+A strict system prompt defines the allowed domain — AI, Machine Learning, Data Science, and directly related mathematics and programming concepts. Claude is instructed to reject questions outside this domain regardless of whether the answer exists in uploaded documents.
 ---
 
 
