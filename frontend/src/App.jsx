@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { sendMessage } from './api'
 import './App.css'
 import DocumentUpload from './DocumentUpload'
+import ReactMarkdown from 'react-markdown'
 
 export default function App() {
   // 3 state variables here
@@ -95,7 +96,7 @@ export default function App() {
       {messages.map((msg, index) => (
         <div key={index} className={`message ${msg.role}`}>
           <span className="label">{msg.role === 'user' ? 'You' : 'Teacher'}</span>
-          <p>{msg.content}</p>
+          <ReactMarkdown>{msg.content}</ReactMarkdown>
         </div>
       ))}
       {loading && (

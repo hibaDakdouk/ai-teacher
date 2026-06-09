@@ -6,7 +6,7 @@ An intelligent tutoring chatbot that teaches students Artificial Intelligence us
 
 ## What It Does
 
-Students can upload their course materials (PDF documents) and have a conversation with an AI teacher that:
+The owner can upload some permanent course materials, aslo students can upload their course materials (PDF documents) and have a conversation with an AI teacher that:
 - Answers questions **based on the uploaded material** using RAG
 - Never gives direct answers: it rather guides students to discover answers themselves
 - Stays strictly on topic: it redirects off-topic questions back to AI learning
@@ -20,7 +20,7 @@ This project implements a proper RAG pipeline:
 
 1. Uploaded PDFs are parsed, chunked with overlap, and embedded into vectors
 2. Each student message triggers a semantic similarity search across the knowledge base
-3. Only the 3 most relevant chunks are retrieved and injected into the prompt
+3. Only the 3 most relevant chunks of each of the owner's and student's documents are retrieved and injected into the prompt
 4. Claude generates a response grounded in the course material
 
 ---
@@ -36,6 +36,7 @@ This project implements a proper RAG pipeline:
 | PDF Parsing | pdfplumber |
 | Frontend | React, Vite, Axios |
 | Environment | python-dotenv |
+| Markdown Rendering | react-markdown |
 
 ---
 
@@ -65,8 +66,9 @@ PDF → pdfplumber → raw text → chunk (500 chars, 50 overlap)
 
 **Retrieval pipeline** (runs on every message):
 ```
-User question → embed → cosine similarity search
-    → top 3 chunks → augmented system prompt → Claude
+User question → embed → cosine similarity search in both collections
+→ top 3 chunks from owner_docs + top 3 chunks from student_docs
+→ combined context → augmented system prompt → Claude
 ```
 
 ---
@@ -137,11 +139,15 @@ Open [http://localhost:5173](http://localhost:5173)
 
 ## How to Use
 
-1. Open the app at `http://localhost:5173`
-2. Upload a PDF using the upload button in the header
-3. Ask questions about the content — the teacher will guide you
-4. The teacher gives hints, asks questions back, and only reveals answers after genuine attempts
+**As owner/admin:**
+1. Go to http://localhost:8000/docs
+2. Use POST /admin/upload to pre-load AI course materials
+3. These documents are permanent and available to all students
 
+**As student:**
+1. Open the app at http://localhost:5173
+2. Optionally upload a personal PDF using the upload button
+3. Ask questions — the teacher answers from both owner and student documents
 ---
 
 ## Key Design Decisions
@@ -158,6 +164,11 @@ Zero-setup local vector database, perfect for development. The entire RAG logic 
 **Why a Socratic system prompt?**
 A teacher that gives direct answers produces passive learners. Guiding students to discover answers themselves produces deeper understanding and retention — the core pedagogical principle behind this project.
 
+**How off-topic questions are handled?**
+A strict system prompt defines the allowed domain — AI, Machine Learning, 
+Data Science, and directly related mathematics and programming concepts. 
+Claude is instructed to reject questions outside this domain regardless 
+of whether the answer exists in uploaded documents.
 ---
 
 

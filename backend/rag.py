@@ -59,7 +59,7 @@ def embed_chunks(chunks: list) -> list:
     return vectors
 
 
-def store_chunks(chunks: list, embeddings: list) -> None:
+def store_chunks(chunks: list, embeddings: list, collection_name= "student_docs") -> None:
     """
     Stores the chunks and their corresponding embeddings in a vector database.
 
@@ -73,14 +73,14 @@ def store_chunks(chunks: list, embeddings: list) -> None:
     # Create a persistent client — saves to disk so data survives restarts
     client = chromadb.PersistentClient(path="./chroma_db")
 
-    # delete old collections
-    try:
-        client.delete_collection("documents")
-    except:
-        pass  # collection didn't exist yet, that's fine
+    if collection_name == "student_docs":  # only delete student docs, never owner docs
+        try:
+            client.delete_collection(collection_name)
+        except:
+            pass
     
     # Get or create a collection — like a table in a regular database
-    collection = client.get_or_create_collection(name="documents")
+    collection = client.get_or_create_collection(name=collection_name)
 
     # generate ids for each chunk
     ids = [str(uuid.uuid4()) for i in range(len(chunks))]
@@ -88,19 +88,20 @@ def store_chunks(chunks: list, embeddings: list) -> None:
     # Add the chunks and their embeddings to the collection
     collection.add(ids=ids, documents=chunks, embeddings=embeddings)    
 
-def index_document(text:str) -> int:
+def index_document(text:str, collection_name: str = "student_docs") -> int:
     """
     Indexes a document by chunking the text, generating embeddings, and storing them in a vector database.
 
     Args:
-        text (str): The input text to be indexed.   
+        text (str): The input text to be indexed.
+        collection_name (str): The name of the collection to store the indexed document.
     Returns:
-        None    
+        int: The number of chunks the document was split into.
     """
 
     chunks = chunk_text(text)
     embeddings = embed_chunks(chunks)
-    store_chunks(chunks, embeddings)
+    store_chunks(chunks, embeddings, collection_name)
 
     return len(chunks)
 
@@ -114,12 +115,24 @@ def search(query: str, n_results: int = 3) -> list:
     )
     query_embedding = response.data[0].embedding
 
-    # connect to ChromaDB and get the collection
+    # connect to ChromaDB and get the collections
     chromadb_client = chromadb.PersistentClient(path="./chroma_db")
-    collection = chromadb_client.get_collection(name="documents")    
     
-    # query the collection
-    results = collection.query(query_embeddings=[query_embedding], n_results=n_results)
+    all_results = []
 
-    # return the list of relevant chunks
-    return results['documents'][0]  # Since we only send one query at a time, we take the first (and only) result set
+    try:
+        collection_1 = chromadb_client.get_collection(name="student_docs")
+        results_1 = collection_1.query(query_embeddings=[query_embedding], n_results=n_results)
+        all_results += results_1['documents'][0]
+    except:
+        pass  # student hasn't uploaded anything yet
+
+    try:
+        collection_2 = chromadb_client.get_collection(name="owner_docs")
+        results_2 = collection_2.query(query_embeddings=[query_embedding], n_results=n_results)
+        all_results += results_2['documents'][0]
+    except:
+        pass  # owner hasn't uploaded anything yet
+
+    return all_results
+    
